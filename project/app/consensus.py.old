@@ -1,16 +1,12 @@
-from flask import Blueprint, send_from_directory, jsonify, request
+from flask import Blueprint, request, jsonify, send_from_directory
 import requests
-import os
 
-# Define the Blueprint, specifying the static folder path
-consensus_bp = Blueprint(
-    'consensus',
-    __name__,
-    static_folder=os.path.join(os.path.dirname(__file__), '../static'),
-)
+# Create a Blueprint for the consensus API
+consensus_bp = Blueprint('consensus', __name__, static_folder='static')
 
-# Alpha Vantage API key
+# Replace this with your Alpha Vantage API key
 API_KEY = 'QIFBUAJX9DBVOHRI'
+
 
 def fetch_sma(symbol, interval='daily', time_period='20'):
     """Fetch SMA data for the given stock symbol."""
@@ -31,6 +27,7 @@ def fetch_sma(symbol, interval='daily', time_period='20'):
     sma_value = float(sma_data[latest_date]['SMA'])
     return sma_value
 
+
 def fetch_rsi(symbol, interval='daily', time_period='14'):
     """Fetch RSI data for the given stock symbol."""
     url = (
@@ -50,12 +47,6 @@ def fetch_rsi(symbol, interval='daily', time_period='14'):
     rsi_value = float(rsi_data[latest_date]['RSI'])
     return rsi_value
 
-@consensus_bp.route("/")
-def serve_frontend():
-    """
-    Serve the index.html file as the front end for the consensus API.
-    """
-    return send_from_directory(consensus_bp.static_folder, 'index.html')
 
 @consensus_bp.route('/market/technical/consensus', methods=['GET'])
 def get_consensus():
@@ -93,3 +84,10 @@ def get_consensus():
     except Exception as e:
         return jsonify({"msg": f"Error processing request: {e}"}), 500
 
+
+@consensus_bp.route("/")
+def serve_frontend():
+    """
+    Serve the index.html file as the front end for the consensus API.
+    """
+    return send_from_directory(consensus_bp.static_folder, 'index.html')
