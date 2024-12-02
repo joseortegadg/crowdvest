@@ -3,117 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Consensus App</title>
+    <title>Market Consensus</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            text-align: center;
-            background: #fff;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
         }
 
         .result {
-            margin-top: 20px;
+            margin: 10px 0;
         }
 
-        .result p {
-            margin: 5px 0;
+        .indicator {
+            font-weight: bold;
+        }
+
+        .buy {
+            color: green;
+        }
+
+        .sell {
+            color: red;
+        }
+
+        .hold {
+            color: orange;
+        }
+
+        .strong-buy {
+            color: darkgreen;
+        }
+
+        .data-not-available {
+            color: gray;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Stock Consensus</h1>
-        <form id="consensusForm">
-            <input type="text" id="symbol" placeholder="Stock Symbol (e.g., AAPL)" required />
-            <select id="interval">
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-            </select>
-            <input type="number" id="smaTimePeriod" placeholder="SMA Time Period (default: 20)" />
-            <input type="number" id="rsiTimePeriod" placeholder="RSI Time Period (default: 14)" />
-            <button type="submit">Get Consensus</button>
-        </form>
+    <h1>Market Consensus for Stock</h1>
+    <form id="consensus-form">
+        <label for="symbol">Enter Stock Symbol: </label>
+        <input type="text" id="symbol" name="symbol" required>
+        <br><br>
+        <label for="interval">Interval: </label>
+        <select id="interval" name="interval">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+        </select>
+        <br><br>
+        <button type="submit">Get Consensus</button>
+    </form>
 
-        <div class="result" id="result"></div>
-    </div>
+    <h2>Consensus Results</h2>
+    <div id="consensus-results"></div>
 
     <script>
-        const form = document.getElementById("consensusForm");
-        const resultDiv = document.getElementById("result");
-
-        form.addEventListener("submit", async (event) => {
+        document.getElementById('consensus-form').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            // Get user input
-            const symbol = document.getElementById("symbol").value.trim();
-            const interval = document.getElementById("interval").value;
-            const smaTimePeriod = document.getElementById("smaTimePeriod").value || "20";
-            const rsiTimePeriod = document.getElementById("rsiTimePeriod").value || "14";
+            // Get the symbol and interval values
+            const symbol = document.getElementById('symbol').value;
+            const interval = document.getElementById('interval').value;
 
-            // Construct the API URL
-            const apiUrl = `http://127.0.0.1:5000/market/technical/consensus?symbol=${symbol}&interval=${interval}&sma_time_period=${smaTimePeriod}&rsi_time_period=${rsiTimePeriod}`;
+            // Fetch the consensus data from the Flask API
+            fetch(`/market/technical/consensus?symbol=${symbol}&interval=${interval}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Extract consensus data
+                    const consensus = data.consensus;
+                    let resultHTML = `<p><strong>Symbol:</strong> ${symbol} <strong>Interval:</strong> ${interval}</p>`;
+                    
+                    // Loop through each indicator and display the consensus
+                    for (const [indicator, recommendation] of Object.entries(consensus)) {
+                        const recommendationClass = getRecommendationClass(recommendation);
+                        resultHTML += `
+                            <div class="result">
+                                <span class="indicator">${indicator}:</span>
+                                <span class="${recommendationClass}">${recommendation}</span>
+                            </div>
+                        `;
+                    }
 
-            try {
-                // Fetch data from the backend
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-
-                // Handle errors
-                if (!response.ok) {
-                    resultDiv.innerHTML = `<p style="color: red;">Error: ${data.msg}</p>`;
-                    return;
-                }
-
-                // Display results
-                resultDiv.innerHTML = `
-                    <p><strong>Stock Symbol:</strong> ${data.symbol}</p>
-                    <p><strong>Interval:</strong> ${data.interval}</p>
-                    <p><strong>SMA:</strong> ${data.sma}</p>
-                    <p><strong>RSI:</strong> ${data.rsi}</p>
-                    <p><strong>Consensus:</strong> <span style="color: ${data.consensus === 'Buy' ? 'green' : data.consensus === 'Sell' ? 'red' : 'orange'};">${data.consensus}</span></p>
-                `;
-            } catch (error) {
-                resultDiv.innerHTML = `<p style="color: red;">Error fetching data: ${error.message}</p>`;
-            }
+                    // Display the consensus results
+                    document.getElementById('consensus-results').innerHTML = resultHTML;
+                })
+                .catch(error => {
+                    document.getElementById('consensus-results').innerHTML = '<p class="data-not-available">Error fetching consensus data. Please try again later.</p>';
+                });
         });
+
+        // Helper function to determine the class for each recommendation
+        function getRecommendationClass(recommendation) {
+            switch (recommendation) {
+                case 'Buy':
+                    return 'buy';
+                case 'Sell':
+                    return 'sell';
+                case 'Hold':
+                    return 'hold';
+                case 'Strong Buy':
+                    return 'strong-buy';
+                case 'Data not available':
+                    return 'data-not-available';
+                default:
+                    return '';
+            }
+        }
     </script>
 </body>
 </html>
-
