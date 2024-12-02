@@ -5,7 +5,7 @@ import requests
 app = Flask(__name__)
 
 # Alpha Vantage API key
-API_KEY = 'QIFBUAJX9DBVOHRI'
+API_KEY = 'XTT9OCEELPXYT4HA'
 
 # Example list of top 5 most moving stocks (you can change this to be dynamic or based on an external source)
 top_stocks = ['AAPL', 'MSFT', 'GOOG', 'AMZN', 'TSLA']
