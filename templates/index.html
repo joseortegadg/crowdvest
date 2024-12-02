@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Technical Indicators</title>
+</head>
+<body>
+    <h1>Stock Technical Indicators</h1>
+    
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Stock Symbol</th>
+                <th>SMA</th>
+                <th>RSI</th>
+                <th>MACD</th>
+                <th>EMA</th>
+                <th>Sentiment Score</th>
+                <th>Consensus</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in stock_data %}
+            <tr>
+                <td>{{ stock.symbol }}</td>
+                <td>{{ stock.sma if stock.sma else 'N/A' }}</td>
+                <td>{{ stock.rsi if stock.rsi else 'N/A' }}</td>
+                <td>{{ stock.macd if stock.macd else 'N/A' }}</td>
+                <td>{{ stock.ema if stock.ema else 'N/A' }}</td>
+                <td>{{ stock.sentiment_score if stock.sentiment_score else 'N/A' }}</td>
+                <td>
+                    <ul>
+                        <li>SMA: {{ stock.consensus['SMA'] }}</li>
+                        <li>RSI: {{ stock.consensus['RSI'] }}</li>
+                        <li>MACD: {{ stock.consensus['MACD'] }}</li>
+                        <li>EMA: {{ stock.consensus['EMA'] }}</li>
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

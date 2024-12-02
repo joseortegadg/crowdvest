@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Details - {{ stock_data.symbol }}</title>
+</head>
+<body>
+    <h1>{{ stock_data.symbol }} Technical Indicators</h1>
+    
+    <table border="1">
+        <thead>
+            <tr>
+                <th>SMA</th>
+                <th>RSI</th>
+                <th>MACD</th>
+                <th>EMA</th>
+                <th>Sentiment Score</th>
+                <th>Consensus</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ stock_data.sma if stock_data.sma else 'N/A' }}</td>
+                <td>{{ stock_data.rsi if stock_data.rsi else 'N/A' }}</td>
+                <td>{{ stock_data.macd if stock_data.macd else 'N/A' }}</td>
+                <td>{{ stock_data.ema if stock_data.ema else 'N/A' }}</td>
+                <td>{{ stock_data.sentiment_score if stock_data.sentiment_score else 'N/A' }}</td>
+                <td>
+                    <ul>
+                        <li>SMA: {{ stock_data.consensus['SMA'] }}</li>
+                        <li>RSI: {{ stock_data.consensus['RSI'] }}</li>
+                        <li>MACD: {{ stock_data.consensus['MACD'] }}</li>
+                        <li>EMA: {{ stock_data.consensus['EMA'] }}</li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <a href="/">Back to Top 5 Stocks</a>
+</body>
+</html>
