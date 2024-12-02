@@ -99,6 +99,9 @@ def get_consensus(sma, rsi, macd, ema):
 def index():
     stock_data = []
     
+    # Debugging: Print expert forecasts to verify it's populated
+    print("Expert Forecasts:", expert_forecasts)
+    
     for symbol in top_stocks:
         sma = fetch_sma(symbol)
         rsi = fetch_rsi(symbol)
@@ -118,7 +121,9 @@ def index():
             'consensus': consensus
         })
     
-    return render_template('index.html', stock_data=stock_data)
+    return render_template('index.html', stock_data=stock_data, expert_forecasts=expert_forecasts)
+
+
 
 @app.route('/stock/<symbol>')
 def stock(symbol):
@@ -140,7 +145,41 @@ def stock(symbol):
         'consensus': consensus
     }
 
-    return render_template('stock.html', stock_data=stock_data)
+    return render_template('stock.html', stock_data=stock_data, expert_forecasts=expert_forecasts)
+
+
+from flask import request, redirect, url_for
+
+# New route to handle expert forecast submissions
+@app.route('/forecast/<symbol>', methods=['GET', 'POST'])
+def forecast(symbol):
+    if request.method == 'POST':
+        price_target = request.form['price_target']
+        recommendation = request.form['recommendation']
+        rationale = request.form['rationale']
+        
+        # Add the forecast to expert_forecasts
+        if symbol not in expert_forecasts:
+            expert_forecasts[symbol] = []
+        
+        expert_forecasts[symbol].append({
+            'price_target': price_target,
+            'recommendation': recommendation,
+            'rationale': rationale
+        })
+
+        # Debugging: Print the updated expert forecasts
+        print(f"Expert Forecasts for {symbol}: {expert_forecasts[symbol]}")
+        
+        return redirect(url_for('stock', symbol=symbol))
+    
+    return render_template('forecast.html', symbol=symbol)
+
+
+# In-memory storage for expert forecasts (This can be replaced with a database in production)
+expert_forecasts = {}
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
