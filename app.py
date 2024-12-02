@@ -56,12 +56,22 @@ def fetch_sentiment(symbol):
     url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&symbol={symbol}&apikey={API_KEY}'
     response = requests.get(url)
     data = response.json()
-    if 'feed' not in data:
+    
+    # Check if 'feed' is in the data and contains articles
+    if 'feed' not in data or not data['feed']:
         return None
-    sentiment_scores = [article['sentiment_score'] for article in data['feed']]
+    
+    # Safely extract sentiment scores, ensuring the key exists
+    sentiment_scores = []
+    for article in data['feed']:
+        sentiment_score = article.get('sentiment_score')  # Use .get() to avoid KeyError
+        if sentiment_score is not None:
+            sentiment_scores.append(sentiment_score)
+    
     if sentiment_scores:
         return sum(sentiment_scores) / len(sentiment_scores)
     return None
+
 
 # Consensus logic based on technical indicators
 def get_consensus(sma, rsi, macd, ema):
@@ -178,8 +188,6 @@ def forecast(symbol):
 
 # In-memory storage for expert forecasts (This can be replaced with a database in production)
 expert_forecasts = {}
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
