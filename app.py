@@ -109,8 +109,8 @@ def get_consensus(sma, rsi, macd, ema):
     return consensus
 
 
-@app.route('/')
-def index():
+@app.route('/stock_index')
+def stock_index():
     stock_data = []
     
     # Debugging: Print expert forecasts to verify it's populated
@@ -135,8 +135,11 @@ def index():
             'consensus': consensus
         })
     
-    return render_template('index.html', stock_data=stock_data, expert_forecasts=expert_forecasts)
+    return render_template('stock_index.html', stock_data=stock_data, expert_forecasts=expert_forecasts)
 
+@app.route('/')
+def index():
+    return render_template('index.html', top_stocks=top_stocks)
 
 
 @app.route('/stock/<symbol>')
@@ -199,11 +202,21 @@ def expert():
     print("Applications:", applications)
     return render_template('expert.html', applications=applications)
 
+@app.route('/application/', defaults={'application_id': None})
 @app.route('/application/<application_id>')
 def application_detail(application_id):
+    # If no application_id is provided, assign the first available one
+    if not application_id:
+        if applications:
+            application_id = next(iter(applications))  # Get the first key from the applications dictionary
+        else:
+            return render_template('error.html', message="No applications have been created yet")
+
+    # Retrieve the application data
     app_data = applications.get(application_id)
     if not app_data:
         return render_template('error.html', message="Application not found")
+    
     return render_template('application_detail.html', application=app_data)
 
 # API Routes
@@ -250,8 +263,17 @@ def calculate_consensus(application_id):
     return jsonify({"consensus_score": consensus_score})
 
 # Route to display the application and voting page
+# Route to display the application and voting page
+@app.route('/vote/', defaults={'application_id': None})
 @app.route('/vote/<application_id>')
 def vote(application_id):
+    if application_id is None:
+        # Get the first application ID available
+        if applications:
+            application_id = next(iter(applications))  # Get the first key from the dictionary
+        else:
+            return "No applications available to vote on", 404
+
     if application_id not in applications:
         return "Application not found", 404
 
@@ -259,6 +281,7 @@ def vote(application_id):
     consensus_score = application.get("consensus_score", "Not yet calculated")
 
     return render_template('vote.html', application=application, consensus_score=consensus_score)
+
 
 # Sample route to apply (used for testing)
 @app.route('/api/experts/apply', methods=['POST'])
@@ -276,14 +299,24 @@ def submit_application():
     return jsonify({"message": "Application submitted", "id": application_id}), 201
 
 
+@app.route('/api/experts/reputation/', defaults={'expert_id': None}, methods=['GET'])
 @app.route('/api/experts/reputation/<expert_id>', methods=['GET'])
 def get_reputation_score(expert_id):
+    # If no expert_id is provided, assign the first available one
+    if not expert_id:
+        if reputation_scores:
+            expert_id = next(iter(reputation_scores))  # Get the first key from the reputation_scores dictionary
+        else:
+            return jsonify({"message": "No experts have been created yet"}), 404
+
+    # Retrieve feedback for the specified expert
     feedbacks = reputation_scores.get(expert_id, [])
     if not feedbacks:
-        return jsonify({"message": "No feedback found"}), 404
+        return jsonify({"message": f"No feedback found for expert_id: {expert_id}"}), 404
 
+    # Compute reputation score
     reputation = compute_reputation_score(feedbacks)
-    return jsonify({"reputation_score": reputation})
+    return jsonify({"expert_id": expert_id, "reputation_score": reputation}), 200
 
 def compute_reputation_score(feedbacks):
     weighted_scores = [
