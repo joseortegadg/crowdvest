@@ -2,8 +2,8 @@ import os
 from flask import Flask, render_template, request, jsonify
 import requests
 import uuid
-from pgmpy.models import BayesianNetwork
-from pgmpy.factors.discrete import TabularCPD  # Use TabularCPD instead of DiscreteDistribution
+#from pgmpy.models import BayesianNetwork
+#from pgmpy.factors.discrete import TabularCPD  # Use TabularCPD instead of DiscreteDistribution
 
 
 app = Flask(__name__)
@@ -252,15 +252,15 @@ def calculate_consensus(application_id):
     # Example Bayesian Network structure for consensus calculation
     expert_vote_dist = DiscreteDistribution({"accept": 0.6, "reject": 0.4})
     crowd_vote_dist = DiscreteDistribution({"accept": 0.5, "reject": 0.5})
-    final_consensus = BayesianNetwork.from_structure(
+    '''final_consensus = BayesianNetwork.from_structure(
         [(expert_vote_dist, crowd_vote_dist)],
         structure=[[0, 1], [0, 0]]
     )
 
-    consensus_score = final_consensus.probability("accept")
-    applications[application_id]["consensus_score"] = consensus_score
-
-    return jsonify({"consensus_score": consensus_score})
+    consensus_score = final_consensus.probability("accept")'''
+    #applications[application_id]["consensus_score"] = consensus_score
+    return 0
+    #return jsonify({"consensus_score": consensus_score})
 
 # Route to display the application and voting page
 # Route to display the application and voting page
