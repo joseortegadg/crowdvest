@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, jsonify
 import requests
 import uuid
+
 #from pgmpy.models import BayesianNetwork
 #from pgmpy.factors.discrete import TabularCPD  # Use TabularCPD instead of DiscreteDistribution
 
